@@ -1,0 +1,291 @@
+import React, { useState } from "react";
+import styled from "styled-components";
+import CreateTransactionsModal from "../components/CreateTransactionsModal";
+import {
+  FaChevronLeft,
+  FaChevronRight,
+  FaCalendarAlt,
+  FaEdit,
+  FaTrash,
+} from "react-icons/fa";
+import { fetchTransactions } from "../store/tansactionSlice";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import {
+  Container,
+  Row,
+  Col,
+  Input,
+  Button,
+  Badge,
+  Card,
+  CardBody,
+  CardTitle,
+  CardText,
+} from "reactstrap";
+
+// Styled Components
+const CalendarNav = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+`;
+
+const MonthButton = styled(Button)`
+  background: none;
+  border: none;
+  color: #333;
+  font-size: 1.2rem;
+  &:hover {
+    background: #f8f9fa;
+  }
+`;
+
+const CenterMonth = styled.div`
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin: 0 1rem;
+`;
+
+const SearchBox = styled(Input)`
+  margin-bottom: 2rem;
+`;
+
+const TransactionCard = styled(Card)`
+  margin-bottom: 1rem;
+  border-left: 6px solid ${(props) => props.bordercolor || "#ccc"};
+`;
+
+const Amount = styled.span`
+  font-weight: bold;
+  color: ${(props) => (props.type === "income" ? "green" : "red")};
+`;
+
+const CategoryBadge = styled(Badge)`
+  background-color: ${(props) => props.bg || "#888"};
+  margin-right: 0.5rem;
+`;
+
+const CardActions = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+`;
+
+const categories = [
+  { name: "Food", color: "#ff9800" },
+  { name: "Salary", color: "#4caf50" },
+  { name: "Transport", color: "#2196f3" },
+  { name: "Shopping", color: "#e91e63" },
+];
+
+const mockTransactions = [
+  {
+    id: 1,
+    title: "Supermarket",
+    description: "Groceries for the week",
+    amount: -50,
+    type: "expense",
+    category: "Food",
+    date: "2024-06-10",
+  },
+  {
+    id: 2,
+    title: "Salary",
+    description: "Monthly salary",
+    amount: 1200,
+    type: "income",
+    category: "Salary",
+    date: "2024-06-01",
+  },
+  {
+    id: 3,
+    title: "Bus Ticket",
+    description: "Commute to work",
+    amount: -2.5,
+    type: "expense",
+    category: "Transport",
+    date: "2024-06-09",
+  },
+];
+
+function formatMonthYear(date) {
+  return date.toLocaleString("default", { month: "long", year: "numeric" });
+}
+
+export default function TransactionsPage() {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
+  const [search, setSearch] = useState("");
+  const [transactions, setTransactions] = useState([]);
+  const [editModal, setEditModal] = useState({
+    open: false,
+    transaction: null,
+  });
+
+  // Filter transactions by search
+  const filteredTransactions = transactions.filter(
+    (t) =>
+      t.title.toLowerCase().includes(search.toLowerCase()) ||
+      t.description.toLowerCase().includes(search.toLowerCase())
+  );
+
+  // Calendar navigation
+  const handlePrevMonth = () => {
+    setCurrentDate(
+      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
+    );
+  };
+  const handleNextMonth = () => {
+    setCurrentDate(
+      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
+    );
+  };
+
+  // Month picker logic
+  const handleMonthClick = () => setShowMonthPicker(true);
+  const handleMonthSelect = (e) => {
+    const [year, month] = e.target.value.split("-");
+    setCurrentDate(new Date(year, month - 1, 1));
+    setShowMonthPicker(false);
+  };
+
+  // Edit/Delete handlers (mock)
+  const handleEdit = (id) => {
+    const transaction = transactions.find((t) => t.id === id);
+    if (!transaction) return;
+
+    setEditModal({
+      open: true,
+      transaction: {
+        ...transaction,
+      },
+    });
+  };
+  const handleDelete = (id) =>
+    setTransactions(transactions.filter((t) => t.id !== id));
+
+  const dispatch = useDispatch();
+  const fetchData = async () => {
+    const data = await dispatch(
+      fetchTransactions({
+        startDate: new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          1
+        )
+          .toISOString()
+          .split("T")[0],
+        endDate: new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth() + 1,
+          0
+        )
+          .toISOString()
+          .split("T")[0],
+      })
+    );
+    if (fetchTransactions.fulfilled.match(data)) {
+      console.log("Dashboard data fetched:", data.payload);
+      setTransactions(data.payload);
+    } else {
+      console.error("Error fetching dashboard data:", data.error);
+      setTransactions([]);
+    }
+  };
+  useEffect(() => {
+    fetchData();
+  }, [dispatch, currentDate]);
+
+  return (
+    <Container>
+      <Row>
+        <Col md={{ size: 8, offset: 2 }}>
+          {/* Calendar Navigation */}
+          <CalendarNav>
+            <MonthButton onClick={handlePrevMonth}>
+              <FaChevronLeft />
+            </MonthButton>
+            <CenterMonth onClick={handleMonthClick}>
+              <FaCalendarAlt style={{ marginRight: "0.5rem" }} />
+              {formatMonthYear(currentDate)}
+            </CenterMonth>
+            <MonthButton onClick={handleNextMonth}>
+              <FaChevronRight />
+            </MonthButton>
+            {showMonthPicker && (
+              <Input
+                type="month"
+                style={{ width: "150px", marginLeft: "1rem" }}
+                value={`${currentDate.getFullYear()}-${String(
+                  currentDate.getMonth() + 1
+                ).padStart(2, "0")}`}
+                onChange={handleMonthSelect}
+                onBlur={() => setShowMonthPicker(false)}
+                autoFocus
+              />
+            )}
+          </CalendarNav>
+
+          {/* Search Box */}
+          <SearchBox
+            type="search"
+            placeholder="Buscar transacciones..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
+          {/* Transactions List */}
+          {filteredTransactions.map((t) => (
+            <TransactionCard key={t.id} bordercolor={t.category[0].color}>
+              <CardBody>
+                <CardTitle tag="h5">{t.title}</CardTitle>
+                <CardText>{t.description}</CardText>
+                <CardText>
+                  <Amount type={t.type}>
+                    {t.type === "income" ? "+" : "-"}${Math.abs(t.amount)}
+                  </Amount>
+                </CardText>
+                <CardText>
+                  <CategoryBadge bg={t.category[0].color}>
+                    {t.category[0].name}
+                  </CategoryBadge>
+                  <span>{new Date(t.date).toLocaleDateString()}</span>
+                </CardText>
+                <CardActions>
+                  <Button
+                    color="primary"
+                    size="sm"
+                    onClick={() => handleEdit(t.id)}
+                  >
+                    <FaEdit />
+                  </Button>
+                  <Button
+                    color="danger"
+                    size="sm"
+                    onClick={() => handleDelete(t.id)}
+                  >
+                    <FaTrash />
+                  </Button>
+                </CardActions>
+              </CardBody>
+            </TransactionCard>
+          ))}
+        </Col>
+      </Row>
+      <CreateTransactionsModal
+        isOpen={editModal.open}
+        toggle={() => setEditModal({ open: false, transaction: null })}
+        transaction={editModal.transaction}
+        onSave={(updatedTransaction) => {
+          // Handle saving the updated transaction here
+          setEditModal({ open: false, transaction: null });
+        }}
+      />
+    </Container>
+  );
+}

@@ -1,0 +1,43 @@
+const { BASE_URL } = require("../utils/constants");
+
+export const getCategories = async ({ userId, startDate, endDate }) => {
+  const response = await fetch(
+    `${BASE_URL}/categories?userId=${userId}&startDate=${startDate}&endDate=${endDate}`
+  );
+  if (!response.ok) throw new Error("Failed to fetch categories");
+  return response.json();
+};
+
+export const getCategoryById = async (id) => {
+  const response = await fetch(`${BASE_URL}/categories/${id}`);
+  if (!response.ok) throw new Error("Failed to fetch category");
+  return response.json();
+};
+
+export const createCategory = async (category) => {
+  const response = await fetch(`${BASE_URL}/categories`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(category),
+  });
+  if (!response.ok) throw new Error("Failed to create category");
+  return response.json();
+};
+
+export const updateCategory = async (id, category) => {
+  const response = await fetch(`${BASE_URL}/categories/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(category),
+  });
+  if (!response.ok) throw new Error("Failed to update category");
+  return response.json();
+};
+
+export const deleteCategory = async (id) => {
+  const response = await fetch(`${BASE_URL}/categories/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) throw new Error("Failed to delete category");
+  return response.json();
+};
