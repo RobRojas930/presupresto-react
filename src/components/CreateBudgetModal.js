@@ -104,7 +104,7 @@ const CreateBudgetModal = ({
         currentAmount: 0.0,
         percentage: 0.0,
         userId: userId,
-        color: selectedCategory.color || "",
+        color: selectedCategory.color || "#FFFFFF",
         initialAmount: parseFloat(initialAmount),
       };
       await onEdit({

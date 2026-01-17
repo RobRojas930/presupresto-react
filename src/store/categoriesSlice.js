@@ -11,7 +11,7 @@ export const fetchCategories = createAsyncThunk(
       endDate,
     });
     return categories.data;
-  }
+  },
 );
 
 export const fetchCategoryById = createAsyncThunk(
@@ -19,7 +19,47 @@ export const fetchCategoryById = createAsyncThunk(
   async ({ id }) => {
     const categories = await categoriesRepository.getById(id);
     return categories.data;
-  }
+  },
+);
+
+export const fetchCreateCategory = createAsyncThunk(
+  "categories/fetchCreateCategory",
+  async (categoryData, thunkAPI) => {
+    try {
+      const newCategory =
+        await categoriesRepository.create(categoryData);
+      return newCategory;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  },
+);
+
+export const fetchUpdateCategory = createAsyncThunk(
+  "categories/fetchUpdateCategory",
+  async ({ id, categoryData }, thunkAPI) => {
+    try {
+      const updateCategory = await categoriesRepository.update(
+        id,
+        categoryData,
+      );
+      return updateCategory.actualizado;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  },
+);
+
+export const fetchDeleteCategory = createAsyncThunk(
+  "categories/fetchDeleteCategory",
+  async ({ id }, thunkAPI) => {
+    try {
+      await categoriesRepository.delete(id);
+      return id;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  },
 );
 
 const categoriesSlice = createSlice({

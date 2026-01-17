@@ -54,6 +54,8 @@ const LoginPage = () => {
         const result = await dispatch(login({ email, password }));
         if (login.fulfilled.match(result)) {
             const message = result.payload.message;
+                window.location.href = '/';
+
             Swal.fire(message, '', 'success');
             
         } else if (login.rejected.match(result)) {

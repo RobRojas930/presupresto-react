@@ -7,7 +7,7 @@ import {
   fetchCreateBudget,
   fetchUpdateBudget,
   fetchDeleteBudget,
-} from "../store/bugetSlice";
+} from "../store/budgetSlice";
 import { useSelector } from "react-redux";
 import Swal from "sweetalert2";
 import {

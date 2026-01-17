@@ -17,6 +17,10 @@ import {
   NavItem,
   NavLink,
   NavbarText,
+  Dropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem,
 } from 'reactstrap';
 import AnimatedBg from '../components/animated-bg';
 
@@ -40,22 +44,26 @@ const HomePage = () => {
 
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
+
+  // Obtener información de usuario desde localStorage
+  const userData = JSON.parse(localStorage.getItem('user')) || {};
+  const user = userData.data || {};
+  // Función para cerrar sesión
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    window.location.href = '/';
+  };
 
   return (
-
-    <div style={{ minHeight: '100vh', width: '100vw', position: 'relative', }}>
+    <div style={{ minHeight: '100vh', width: '100vw', position: 'relative' }}>
       <AnimatedBg />
       <div style={{ position: 'relative', zIndex: 1 }}>
         <Navbar color="light" light expand="md">
           <Logo src={process.env.PUBLIC_URL + '/assets/images/logo.png'} alt="Logo" onClick={() => window.location.href = '/'} />
-
-          <NavbarBrand href="/" style={
-            {
-              color: 'green'
-            }
-          }
-          >Presupresto</NavbarBrand>
+          <NavbarBrand href="/" style={{ color: 'green' }}>Presupresto</NavbarBrand>
           <NavbarToggler onClick={toggle} />
           <Collapse isOpen={isOpen} navbar>
             <Nav className="me-auto" navbar>
@@ -75,7 +83,49 @@ const HomePage = () => {
                 <NavLink tag={Link} to="/historico">Historico</NavLink>
               </NavItem>
             </Nav>
-            <NavbarText>Simple Text</NavbarText>
+            {/* Dropdown de usuario */}
+            <Nav navbar>
+              <Dropdown isOpen={dropdownOpen} toggle={toggleDropdown} nav inNavbar>
+                <DropdownToggle nav caret>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: 32,
+                      height: 32,
+                      borderRadius: '50%',
+                      background: '#e0e0e0',
+                      marginRight: 8,
+                    }}
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#555"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      style={{ display: 'block' }}
+                    >
+                      <circle cx="12" cy="8" r="4" />
+                      <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+                    </svg>
+                  </span>
+                  {user.name || 'Usuario'}
+                </DropdownToggle>
+                <DropdownMenu end>
+                  <DropdownItem header>
+                    <strong>{user.name || 'Usuario'}</strong>
+                    <div style={{ fontSize: 12, color: '#888' }}>{user.email || ''}</div>
+                  </DropdownItem>
+                  <DropdownItem divider />
+                  <DropdownItem onClick={handleLogout}>Cerrar sesión</DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </Nav>
           </Collapse>
         </Navbar>
         <Routes>
@@ -87,7 +137,6 @@ const HomePage = () => {
           <Route path="/historico" element={<Historico />} />
         </Routes>
       </div>
-
     </div>
   );
 }

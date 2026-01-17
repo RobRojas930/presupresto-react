@@ -26,7 +26,7 @@ export const createCategory = async (category) => {
 
 export const updateCategory = async (id, category) => {
   const response = await fetch(`${BASE_URL}/categories/${id}`, {
-    method: "PUT",
+    method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(category),
   });
@@ -38,6 +38,6 @@ export const deleteCategory = async (id) => {
   const response = await fetch(`${BASE_URL}/categories/${id}`, {
     method: "DELETE",
   });
-  if (!response.ok) throw new Error("Failed to delete category");
+  if (!response.ok) throw new Error();
   return response.json();
 };
