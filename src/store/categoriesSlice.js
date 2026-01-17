@@ -10,7 +10,15 @@ export const fetchCategories = createAsyncThunk(
       startDate,
       endDate,
     });
-    return categories;
+    return categories.data;
+  }
+);
+
+export const fetchCategoryById = createAsyncThunk(
+  "categories/fetchById",
+  async ({ id }) => {
+    const categories = await categoriesRepository.getById(id);
+    return categories.data;
   }
 );
 

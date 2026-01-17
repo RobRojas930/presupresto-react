@@ -23,7 +23,7 @@ const transactionRepository = {
     return await updateTransaction(id, transactionData);
   },
 
-  remove: async (id) => {
+  delete: async (id) => {
     return await deleteTransaction(id);
   },
 };

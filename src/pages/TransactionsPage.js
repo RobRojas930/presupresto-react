@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
+import Swal from "sweetalert2";
 import CreateTransactionsModal from "../components/CreateTransactionsModal";
 import {
   FaChevronLeft,
@@ -8,7 +9,12 @@ import {
   FaEdit,
   FaTrash,
 } from "react-icons/fa";
-import { fetchTransactions } from "../store/tansactionSlice";
+import {
+  fetchTransactions,
+  fetchCreateTransaction,
+  fetchUpdateTransaction,
+  fetchDeleteTransaction,
+} from "../store/tansactionSlice";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import {
@@ -113,6 +119,29 @@ const mockTransactions = [
   },
 ];
 
+const FloatingAddButton = styled.button`
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  font-size: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+  transition: background 0.2s;
+  &:hover {
+    background: #0056b3;
+  }
+`;
+
 function formatMonthYear(date) {
   return date.toLocaleString("default", { month: "long", year: "numeric" });
 }
@@ -126,23 +155,29 @@ export default function TransactionsPage() {
     open: false,
     transaction: null,
   });
+  let user;
+  const dataUser = localStorage.getItem("user");
+  if (dataUser) {
+    user = JSON.parse(dataUser);
+  }
+  const userId = user ? user.data._id : "defaultUserId";
 
   // Filter transactions by search
   const filteredTransactions = transactions.filter(
     (t) =>
       t.title.toLowerCase().includes(search.toLowerCase()) ||
-      t.description.toLowerCase().includes(search.toLowerCase())
+      t.description.toLowerCase().includes(search.toLowerCase()),
   );
 
   // Calendar navigation
   const handlePrevMonth = () => {
     setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
+      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1),
     );
   };
   const handleNextMonth = () => {
     setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
+      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1),
     );
   };
 
@@ -156,7 +191,7 @@ export default function TransactionsPage() {
 
   // Edit/Delete handlers (mock)
   const handleEdit = (id) => {
-    const transaction = transactions.find((t) => t.id === id);
+    const transaction = transactions.find((t) => t._id === id);
     if (!transaction) return;
 
     setEditModal({
@@ -166,28 +201,49 @@ export default function TransactionsPage() {
       },
     });
   };
-  const handleDelete = (id) =>
-    setTransactions(transactions.filter((t) => t.id !== id));
+  const handleDelete = async (id) => {
+    Swal.fire({
+      title: "¿Estás seguro?",
+      text: "Esta acción no se puede deshacer.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteTransaction(id).then(() => {
+          Swal.fire({
+            icon: "success",
+            title: "Transacción eliminada",
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        });
+      }
+    });
+  };
 
   const dispatch = useDispatch();
+
+  //CARGAR TRANSACCIONES
   const fetchData = async () => {
     const data = await dispatch(
       fetchTransactions({
         startDate: new Date(
           currentDate.getFullYear(),
           currentDate.getMonth(),
-          1
+          1,
         )
           .toISOString()
           .split("T")[0],
         endDate: new Date(
           currentDate.getFullYear(),
           currentDate.getMonth() + 1,
-          0
+          0,
         )
           .toISOString()
           .split("T")[0],
-      })
+      }),
     );
     if (fetchTransactions.fulfilled.match(data)) {
       console.log("Dashboard data fetched:", data.payload);
@@ -197,6 +253,40 @@ export default function TransactionsPage() {
       setTransactions([]);
     }
   };
+
+  const createTransactionData = async (transaction) => {
+    const data = await dispatch(fetchCreateTransaction(transaction));
+    if (fetchCreateTransaction.fulfilled.match(data)) {
+      console.log("Transaction data fetched:", data.payload);
+      await fetchData();
+    } else {
+      console.error("Error fetching transaction data:", data.error);
+    }
+  };
+
+  //ACTUALIZAR TRANSACCIONES
+  const updateTransaction = async (id, updatedTransaction) => {
+    const data = await dispatch(
+      fetchUpdateTransaction({ id, updatedTransaction }),
+    );
+    if (fetchUpdateTransaction.fulfilled.match(data)) {
+      await fetchData();
+      console.log("Transaction updated:", data.payload);
+    } else {
+      console.error("Error updating transaction:", data.error);
+    }
+  };
+
+  const deleteTransaction = async (id) => {
+    const data = await dispatch(fetchDeleteTransaction({ id }));
+    if (fetchDeleteTransaction.fulfilled.match(data)) {
+      await fetchData();
+      console.log("Transaction deleted:", data.payload);
+    } else {
+      console.error("Error deleting transaction:", data.error);
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, [dispatch, currentDate]);
@@ -205,7 +295,6 @@ export default function TransactionsPage() {
     <Container>
       <Row>
         <Col md={{ size: 8, offset: 2 }}>
-          {/* Calendar Navigation */}
           <CalendarNav>
             <MonthButton onClick={handlePrevMonth}>
               <FaChevronLeft />
@@ -222,7 +311,7 @@ export default function TransactionsPage() {
                 type="month"
                 style={{ width: "150px", marginLeft: "1rem" }}
                 value={`${currentDate.getFullYear()}-${String(
-                  currentDate.getMonth() + 1
+                  currentDate.getMonth() + 1,
                 ).padStart(2, "0")}`}
                 onChange={handleMonthSelect}
                 onBlur={() => setShowMonthPicker(false)}
@@ -260,14 +349,14 @@ export default function TransactionsPage() {
                   <Button
                     color="primary"
                     size="sm"
-                    onClick={() => handleEdit(t.id)}
+                    onClick={() => handleEdit(t._id)}
                   >
                     <FaEdit />
                   </Button>
                   <Button
                     color="danger"
                     size="sm"
-                    onClick={() => handleDelete(t.id)}
+                    onClick={() => handleDelete(t._id)}
                   >
                     <FaTrash />
                   </Button>
@@ -278,14 +367,37 @@ export default function TransactionsPage() {
         </Col>
       </Row>
       <CreateTransactionsModal
+        userId={userId}
+        startDate={
+          new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
+            .toISOString()
+            .split("T")[0]
+        }
+        endDate={
+          new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0)
+            .toISOString()
+            .split("T")[0]
+        }
         isOpen={editModal.open}
         toggle={() => setEditModal({ open: false, transaction: null })}
         transaction={editModal.transaction}
-        onSave={(updatedTransaction) => {
-          // Handle saving the updated transaction here
+        onSave={async (transaction) => {
+          createTransactionData(transaction);
+          setEditModal({ open: false, transaction: null });
+        }}
+        onEdit={(id, updatedTransaction) => {
+          updateTransaction(id, updatedTransaction);
           setEditModal({ open: false, transaction: null });
         }}
       />
+      <FloatingAddButton
+        title="Crear presupuesto"
+        onClick={() => {
+          setEditModal({ open: true, transaction: null });
+        }}
+      >
+        +
+      </FloatingAddButton>
     </Container>
   );
 }

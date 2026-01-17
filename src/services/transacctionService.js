@@ -18,7 +18,7 @@ export const getTransactionById = async (id) => {
 
 // Crear una nueva transacción
 export const createTransaction = async (transactionData) => {
-  const response = await fetch(`${BASE_URL}/transactions`, {
+  const response = await fetch(`${BASE_URL}/transaction`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(transactionData),
@@ -29,8 +29,8 @@ export const createTransaction = async (transactionData) => {
 
 // Actualizar una transacción existente
 export const updateTransaction = async (id, transactionData) => {
-  const response = await fetch(`${BASE_URL}/transactions/${id}`, {
-    method: "PUT",
+  const response = await fetch(`${BASE_URL}/transaction/${id}`, {
+    method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(transactionData),
   });
@@ -40,7 +40,7 @@ export const updateTransaction = async (id, transactionData) => {
 
 // Eliminar una transacción
 export const deleteTransaction = async (id) => {
-  const response = await fetch(`${BASE_URL}/transactions/${id}`, {
+  const response = await fetch(`${BASE_URL}/transaction/${id}`, {
     method: "DELETE",
   });
   if (!response.ok) throw new Error("Error al eliminar la transacción");

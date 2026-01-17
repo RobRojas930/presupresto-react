@@ -7,7 +7,7 @@ const initialState = {
   loading: false,
   error: null,
 };
-export const fetchTransactions   = createAsyncThunk(
+export const fetchTransactions = createAsyncThunk(
   "transactions/fetchAll",
   async ({ startDate, endDate }, thunkAPI) => {
     try {
@@ -20,14 +20,65 @@ export const fetchTransactions   = createAsyncThunk(
           startDate,
           endDate,
         });
-        return data.data;    
+        return data.data;
       } else {
         return thunkAPI.rejectWithValue("Usuario no autenticado");
       }
     } catch (error) {
       return thunkAPI.rejectWithValue(error.message);
     }
-  }
+  },
+);
+
+export const fetchCreateTransaction = createAsyncThunk(
+  "transactions/create",
+  async (transaction, thunkAPI) => {
+    try {
+      const user = localStorage.getItem("user");
+      if (user !== null) {
+        const jsonData = JSON.parse(user);
+        const userId = jsonData.data._id;
+        const response = await transactionRepository.create({
+          userId,
+          ...transaction,
+        });
+        return response.actualizado;
+      } else {
+        return thunkAPI.rejectWithValue("Usuario no autenticado");
+      }
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  },
+);
+
+export const fetchUpdateTransaction = createAsyncThunk(
+  "transactions/update",
+  async ({ id, updatedTransaction }, thunkAPI) => {
+    try {
+      const response = await transactionRepository.update(
+        id,
+        updatedTransaction,
+      );
+
+      return response.actualizado;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  },
+);
+
+export const fetchDeleteTransaction = createAsyncThunk(
+  "transactions/delete",
+  async ({ id }, thunkAPI) => {
+    try {
+      const response = await transactionRepository.delete(id);
+
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  },
 );
 
 const transactionSlice = createSlice({
@@ -51,7 +102,7 @@ const transactionSlice = createSlice({
     },
     updateTransaction(state, action) {
       const index = state.transactions.findIndex(
-        (t) => t.id === action.payload.id
+        (t) => t.id === action.payload.id,
       );
       if (index !== -1) {
         state.transactions[index] = action.payload;
@@ -59,7 +110,7 @@ const transactionSlice = createSlice({
     },
     deleteTransaction(state, action) {
       state.transactions = state.transactions.filter(
-        (t) => t.id !== action.payload
+        (t) => t.id !== action.payload,
       );
     },
   },
