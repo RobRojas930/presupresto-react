@@ -263,43 +263,51 @@ function CategoriesPage() {
           {filteredCategories.map((cat) => {
             const icon = getIconByCode(cat.icon);
             return (
-              <CategoryCard key={cat.id}>
-                <CategoryIconBubble color={cat.color}>
-                  <FontAwesomeIcon icon={icon} />
-                </CategoryIconBubble>
-                <CategoryName>{cat.name}</CategoryName>
-                <CardActions>
-                  <Button
-                    color="primary"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedCategory(cat);
-                      setIsOpenModal(true);
-                    }}
-                  >
-                    <FaEdit />
-                  </Button>
-                  <Button
-                    color="danger"
-                    size="sm"
-                    onClick={() => {
-                      Swal.fire({
-                        title: "¿Estás seguro?",
-                        text: "Esta acción no se puede deshacer.",
-                        icon: "warning",
-                        showCancelButton: true,
-                        confirmButtonText: "Sí, eliminar",
-                        cancelButtonText: "Cancelar",
-                      }).then((result) => {
-                        if (result.isConfirmed) {
-                          fetchDeleteCategoryData(cat._id);
-                        }
-                      });
-                    }}
-                  >
-                    <FaTrash />
-                  </Button>
-                </CardActions>
+              <CategoryCard key={cat.id} style={{ padding: "10px 15px" }}>
+                <Row style={{ alignItems: "center", justifyContent: "center", width: "100%" }}>
+                  <Col md={2} style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <CategoryIconBubble color={cat.color}>
+                      <FontAwesomeIcon icon={icon} />
+                    </CategoryIconBubble>
+                  </Col>
+                  <Col md={8} style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <CategoryName>{cat.name}</CategoryName>
+                  </Col>
+                  <Col md={2} style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <CardActions>
+                      <Button
+                        color="primary"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedCategory(cat);
+                          setIsOpenModal(true);
+                        }}
+                      >
+                        <FaEdit />
+                      </Button>
+                      <Button
+                        color="danger"
+                        size="sm"
+                        onClick={() => {
+                          Swal.fire({
+                            title: "¿Estás seguro?",
+                            text: "Esta acción no se puede deshacer.",
+                            icon: "warning",
+                            showCancelButton: true,
+                            confirmButtonText: "Sí, eliminar",
+                            cancelButtonText: "Cancelar",
+                          }).then((result) => {
+                            if (result.isConfirmed) {
+                              fetchDeleteCategoryData(cat._id);
+                            }
+                          });
+                        }}
+                      >
+                        <FaTrash />
+                      </Button>
+                    </CardActions>
+                  </Col>
+                </Row>
               </CategoryCard>
             );
           })}
