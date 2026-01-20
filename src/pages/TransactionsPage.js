@@ -332,35 +332,45 @@ export default function TransactionsPage() {
           {filteredTransactions.map((t) => (
             <TransactionCard key={t.id} bordercolor={t.category[0].color}>
               <CardBody>
-                <CardTitle tag="h5">{t.title}</CardTitle>
-                <CardText>{t.description}</CardText>
-                <CardText>
-                  <Amount type={t.type}>
-                    {t.type === "income" ? "+" : "-"}${Math.abs(t.amount)}
-                  </Amount>
-                </CardText>
-                <CardText>
-                  <CategoryBadge bg={t.category[0].color}>
-                    {t.category[0].name}
-                  </CategoryBadge>
-                  <span>{new Date(t.date).toLocaleDateString()}</span>
-                </CardText>
-                <CardActions>
-                  <Button
-                    color="primary"
-                    size="sm"
-                    onClick={() => handleEdit(t._id)}
-                  >
-                    <FaEdit />
-                  </Button>
-                  <Button
-                    color="danger"
-                    size="sm"
-                    onClick={() => handleDelete(t._id)}
-                  >
-                    <FaTrash />
-                  </Button>
-                </CardActions>
+                <Row>
+                  <Col md={3}>
+                    <CardTitle tag="h5">{t.title}</CardTitle>
+                    <CardText>{t.description}</CardText>
+                  </Col>
+                  <Col md={3} style={{ textAlign: "right" }}>
+                    <CardText>
+                      <Amount type={t.type}>
+                        {t.type === "income" ? "+" : "-"}${Math.abs(t.amount)}
+                      </Amount>
+                    </CardText>
+                  </Col>
+                  <Col md={3}>
+                    <CardText>
+                      <CategoryBadge bg={t.category[0].color}>
+                        {t.category[0].name}
+                      </CategoryBadge>
+                      <div>{new Date(t.date).toLocaleDateString()}</div>
+                    </CardText>
+                  </Col>
+                  <Col md={3} style={{ textAlign: "right" }}>
+                    <CardActions>
+                      <Button
+                        color="primary"
+                        size="sm"
+                        onClick={() => handleEdit(t._id)}
+                      >
+                        <FaEdit />
+                      </Button>
+                      <Button
+                        color="danger"
+                        size="sm"
+                        onClick={() => handleDelete(t._id)}
+                      >
+                        <FaTrash />
+                      </Button>
+                    </CardActions>
+                  </Col>
+                </Row>
               </CardBody>
             </TransactionCard>
           ))}
